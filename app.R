@@ -7,7 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 library(ggplot2);library(dplyr);library(tidyr);library(data.table);library(leaflet)
-library(lubridate);library(magrittr);library(stringr);library(purrr);library(shiny)
+library(lubridate);library(magrittr);library(stringr);library(purrr);library(shiny);library(rsconnect)
 
 GPS_obs <- readRDS("obs_gps_309_2019-05-19_2019-06-18.rds")
 
