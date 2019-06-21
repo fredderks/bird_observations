@@ -1,0 +1,12 @@
+name: bird_observations
+title: bird_observations
+username:
+account: fredderks
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 988720
+bundleId: 2164571
+url: https://fredderks.shinyapps.io/bird_observations/
+when: 1560966327.77712
+asMultiple: FALSE
+asStatic: FALSE
