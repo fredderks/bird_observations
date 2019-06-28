@@ -7,7 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 library(ggplot2);library(dplyr);library(tidyr);library(data.table);library(leaflet);library(leaflet.extras)
-library(lubridate);library(magrittr);library(stringr);library(purrr);library(shiny)
+library(lubridate);library(magrittr);library(stringr);library(purrr);library(shiny);library(rvest)
 
 myIcons <- iconList("algemeen" = makeIcon("green.png", iconWidth = 18, iconHeight = 24), 
                     "vrij algemeen" = makeIcon("blue.png", iconWidth = 18, iconHeight = 24),
