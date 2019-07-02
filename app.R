@@ -14,6 +14,7 @@ myIcons <- iconList("algemeen" = makeIcon("green.png", iconWidth = 18, iconHeigh
                     "zeldzaam" = makeIcon("amber.png", iconWidth = 18, iconHeight =24),
                     "zeer zeldzaam" = makeIcon("red.png", iconWidth = 18, iconHeight =24))
 
+provdata <- readRDS(paste(sep="","LIFER_obs_",0,"_",today(),".rds"))
 
 #### Define UI for application that draws a map plotting bird observations ####
 ui <- fluidPage(
@@ -24,7 +25,7 @@ ui <- fluidPage(
     absolutePanel(top = 10, left = 100, 
                   wellPanel(
                       sliderInput("time", "Date of observation", 
-                                  floor_date(today()), 
+                                  floor_date(min(provdata$date),"hours"), 
                                   ceiling_date(Sys.time(),"hours"),
                                   value = c(floor_date(today()),ceiling_date(Sys.time(),"hours")),
                                   step=3600),
@@ -52,15 +53,12 @@ server <- function(input, output, session) {
         )
     })
     
-    provdata <- reactive({
-        readRDS(paste(sep="","LIFER_obs_",0,"_2019-06-28.rds"))
-    })
     
     liferdata <- reactive({
         if (input$lifer == 1){
-           provdata()[!provdata()$species %in% lifelist(), ] # https://stackoverflow.com/questions/15227887
+           provdata[!provdata$species %in% lifelist(), ] # https://stackoverflow.com/questions/15227887
         } else {
-           provdata()
+           provdata
         }
     })
     
@@ -73,7 +71,7 @@ server <- function(input, output, session) {
     labelcontent <- reactive({
         paste(sep="",
               "<b>",filteredData()$species,"</b>&emsp;[",filteredData()$rarity,"]",
-              "<br/>Seen on ",filteredData()$date,
+              "<br/>Seen on ",as.POSIXct(filteredData()$date, tz = "CEST"),
               "<br/>Location: ",filteredData()$location,
               "<br/><a href=",filteredData()$link," target='_blank'>",filteredData()$link,"</a>")
     })
@@ -83,8 +81,8 @@ server <- function(input, output, session) {
             addTiles() %>%
             addProviderTiles("OpenStreetMap.HOT", group = "OSM") %>%
             addProviderTiles("Esri.WorldImagery",group = "Satellite")%>%
-            fitBounds(lng1 = min(provdata()$lon),lat1 = min(provdata()$lat),
-                      lng2 = max(provdata()$lon),lat2 = max(provdata()$lat))%>%
+            fitBounds(lng1 = min(provdata$lon),lat1 = min(provdata$lat),
+                      lng2 = max(provdata$lon),lat2 = max(provdata$lat))%>%
             addControlGPS(options = gpsOptions(position = "topleft", activate = FALSE, 
                                                autoCenter = TRUE, maxZoom = 11, 
                                                setView = FALSE))
