@@ -65,7 +65,7 @@ server <- function(input, output, session) {
     filteredData <- reactive({
         from<- input$time[1]
         till<- input$time[2]
-        liferdata() %>% filter(date >= from & date <=  till)
+        liferdata() %>% filter(date >= from & date <=  till) %>% arrange(match(rarity, c("algemeen", "vrij algemeen", "zeldzaam", "zeer zeldzaam")))
     })
     
     labelcontent <- reactive({
@@ -81,8 +81,7 @@ server <- function(input, output, session) {
             addTiles() %>%
             addProviderTiles("OpenStreetMap.HOT", group = "OSM") %>%
             addProviderTiles("Esri.WorldImagery",group = "Satellite")%>%
-            fitBounds(lng1 = min(provdata$lon),lat1 = min(provdata$lat),
-                      lng2 = max(provdata$lon),lat2 = max(provdata$lat))%>%
+            setView(lat = 52.2, lng = 5.5, zoom = 8) %>%
             addControlGPS(options = gpsOptions(position = "topleft", activate = FALSE, 
                                                autoCenter = TRUE, maxZoom = 11, 
                                                setView = FALSE))
