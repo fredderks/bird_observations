@@ -15,25 +15,62 @@ myIcons <- iconList("algemeen" = makeIcon("green.png", iconWidth = 18, iconHeigh
                     "zeer zeldzaam" = makeIcon("red.png", iconWidth = 18, iconHeight =24))
 
 provdata <- readRDS(paste(sep="","LIFER_obs_",0,"_",today(),".rds"))
+provdata$province <- sub(".* ", "", provdata$location)
 
+provinces <- c("All Provinces"="", "Drenthe"="(DR)", "Flevoland"="(FL)", "Friesland"="(FR)",
+               "Gelderland"="(GE)", "Groningen"="(GR)", "Limburg"="(LI)", "Noord-Brabant"="(NB)",
+               "Noord-Holland"="(NH)", "Overijssel"="(OV)", "Zuid-Holland"="(ZH)", "Utrecht"="(UT)",
+               "Zeeland"="(ZL)")
 #### Define UI for application that draws a map plotting bird observations ####
-ui <- fluidPage(
-    title="Observations Map",
-    tags$head(tags$script(src = "message-handler.js"),
-              tags$link(rel="shortcut icon", href="parroticon.png")),
-    leafletOutput("mymap", width = "100%", height = 800),
-    absolutePanel(top = 10, left = 100, 
-                  wellPanel(
-                      sliderInput("time", "Date of observation", 
-                                  floor_date(min(provdata$date),"hours"), 
-                                  ceiling_date(Sys.time(),"hours"),
-                                  value = c(floor_date(today()),ceiling_date(Sys.time(),"hours")),
-                                  step=3600),
-                      textInput("userid", "Waarneming.nl User ID", value = "130065"),
-                      radioButtons("lifer","",
-                                   choices = list("Only show LIFERs" = 1, "Show all observations" = 2), 
-                                   selected = 1)
-                      ), style = "opacity: 0.92" # https://shiny.rstudio.com/gallery/absolutely-positioned-panels.html
+ui <- navbarPage("Observations Map",
+    tabPanel("Interactive Observations Map",
+        div(class="outer",
+            tags$head(
+                # Include our custom CSS
+                includeCSS("styles.css"),
+                tags$script(src = "message-handler.js"),
+                tags$link(rel="shortcut icon", href="parroticon.png")
+                ),
+        leafletOutput("mymap", width = "100%", height = "100%"),
+        absolutePanel(top = 20, left = 70, width = 300,
+                      wellPanel(
+                          sliderInput("time", "Date of observation", 
+                                      floor_date(today()-7), 
+                                      ceiling_date(Sys.time(),"hours"),
+                                      value = c(floor_date(today()),ceiling_date(Sys.time(),"hours")),
+                                      step=3600, ticks = F),
+                          textInput("userid", "Waarneming.nl User ID", value = "130065", width = 140),
+                          radioButtons("lifer","",
+                                       choices = list("Only show LIFERs" = 1, "Show all observations" = 2), 
+                                       selected = 1)
+                          ), 
+                      style = "opacity: 0.92" # https://shiny.rstudio.com/gallery/absolutely-positioned-panels.html
+            )
+        )
+    ),
+    tabPanel("Data Explorer",
+             fluidRow(
+                 column(3, selectInput("province", "Province", choices = provinces, multiple=TRUE)
+                        ),
+                 column(5, sliderInput("date", "Date of observation", 
+                                       floor_date(min(provdata$date),"hours"), 
+                                       ceiling_date(Sys.time(),"hours"),
+                                       value = c(floor_date(today()),ceiling_date(Sys.time(),"hours")),
+                                       step=3600, ticks = T, width = 500)
+                        ),
+                 column(4, checkboxGroupInput("rarity", "Rarity of observation",
+                                              choices = c("algemeen", "vrij algemeen","zeldzaam", "zeer zeldzaam"), 
+                                              selected = c("algemeen", "vrij algemeen","zeldzaam", "zeer zeldzaam"),
+                                              inline = T),
+                        checkboxGroupInput("validity", "Validity of observation",
+                                           choices = c("confirmed", "unknown","other"),
+                                           selected = c("confirmed", "unknown","other"),
+                                           inline = T)
+                        )
+             ),
+             hr(),
+             DT::dataTableOutput("obstable")
+             
     )
 )
 
@@ -94,6 +131,22 @@ server <- function(input, output, session) {
             addLayersControl(baseGroups = c("OSM", "Satellite"),
                              options = layersControlOptions(collapsed = FALSE),
                              overlayGroups = ~rarity)
+    })
+    
+    #### DataTable
+    output$obstable <- DT::renderDataTable({
+        df <- provdata %>% 
+            filter( date >= input$date[1],
+                    date <= input$date[2],
+                    is.null(input$province) | province %in% input$province,
+                    is.null(input$rarity) | rarity %in% input$rarity,
+                    is.null(input$validity) | validity %in% input$validity
+                    ) %>% 
+            select(-number, -lat, -lon, -province) %>%
+            mutate(date = as.character(date)) %>%
+            arrange(desc(date)) %>%
+            mutate(link =  paste0("<a href='",link,"' target='_blank'>",link,"</a>"))
+        DT::datatable(df, options = list(pageLength = 25), escape = F)
     })
 }
 
