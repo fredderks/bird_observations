@@ -10,6 +10,6 @@ print("")
 print(Sys.time())
 file <- paste(sep="", "LIFER_obs_0_",today()-1,".rds")
 ScrapeLiferObs(130065,0,1,file)
-deployApp(appDir = getwd(),appFiles = c(paste(sep="","LIFER_obs_0_",today(),".rds"),"www","app.R"), forceUpdate = TRUE)
+deployApp(appDir = getwd(),appFiles = c(paste(sep="","LIFER_obs_0_",today(),".rds"),"www","styles.css","app.R"), forceUpdate = TRUE)
 sink()
   
