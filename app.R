@@ -1,10 +1,6 @@
 #
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
+# This Shiny Web Applicaton takes data gathered from waarnemingen.nl and plots bird obserations
+# on a map. The slider can be used to reveal the observations chronologically
 #
 library(ggplot2);library(dplyr);library(tidyr);library(data.table);library(leaflet);library(leaflet.extras)
 library(lubridate);library(magrittr);library(stringr);library(purrr);library(shiny);library(rvest)
@@ -14,13 +10,14 @@ myIcons <- iconList("algemeen" = makeIcon("green.png", iconWidth = 18, iconHeigh
                     "zeldzaam" = makeIcon("amber.png", iconWidth = 18, iconHeight =24),
                     "zeer zeldzaam" = makeIcon("red.png", iconWidth = 18, iconHeight =24))
 
-provdata <- readRDS(paste(sep="","LIFER_obs_",0,"_",today(),".rds"))
-provdata$province <- sub(".* ", "", provdata$location)
+provdata <- readRDS(paste(sep="","LIFER_obs_",0,"_",today(),".rds")) %>% 
+    mutate(province = sub(".* ", "", location))
 
 provinces <- c("All Provinces"="", "Drenthe"="(DR)", "Flevoland"="(FL)", "Friesland"="(FR)",
                "Gelderland"="(GE)", "Groningen"="(GR)", "Limburg"="(LI)", "Noord-Brabant"="(NB)",
                "Noord-Holland"="(NH)", "Overijssel"="(OV)", "Zuid-Holland"="(ZH)", "Utrecht"="(UT)",
                "Zeeland"="(ZL)")
+
 #### Define UI for application that draws a map plotting bird observations ####
 ui <- navbarPage("Observations Map",
     tabPanel("Interactive Observations Map",
@@ -70,7 +67,6 @@ ui <- navbarPage("Observations Map",
              ),
              hr(),
              DT::dataTableOutput("obstable")
-             
     )
 )
 
@@ -80,7 +76,8 @@ server <- function(input, output, session) {
 
     lifelist <- reactive({
         tryCatch(
-            {lifelist.page <- read_html(paste(sep="","https://waarneming.nl/users/",input$userid,"/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on"))%>%
+            {lifelist.page <- paste(sep="","https://waarneming.nl/users/",input$userid,"/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on") %>%
+                read_html()%>%
                 html_node("table")%>%
                 html_table()
             lifelist.page$naam}, 
@@ -89,7 +86,6 @@ server <- function(input, output, session) {
             }
         )
     })
-    
     
     liferdata <- reactive({
         if (input$lifer == 1){
@@ -100,9 +96,9 @@ server <- function(input, output, session) {
     })
     
     filteredData <- reactive({
-        from<- input$time[1]
-        till<- input$time[2]
-        liferdata() %>% filter(date >= from & date <=  till) %>% arrange(match(rarity, c("algemeen", "vrij algemeen", "zeldzaam", "zeer zeldzaam")))
+        liferdata() %>% 
+            filter(date >= input$time[1] & date <=  input$time[2]) %>% 
+            arrange(match(rarity, c("algemeen", "vrij algemeen", "zeldzaam", "zeer zeldzaam")))
     })
     
     labelcontent <- reactive({
@@ -113,6 +109,7 @@ server <- function(input, output, session) {
               "<br/><a href=",filteredData()$link," target='_blank'>",filteredData()$link,"</a>")
     })
     
+    #### Map
     output$mymap <- renderLeaflet({
         leaflet() %>%
             addTiles() %>%
@@ -140,12 +137,11 @@ server <- function(input, output, session) {
                     date <= input$date[2],
                     is.null(input$province) | province %in% input$province,
                     is.null(input$rarity) | rarity %in% input$rarity,
-                    is.null(input$validity) | validity %in% input$validity
-                    ) %>% 
-            select(-number, -lat, -lon, -province) %>%
+                    is.null(input$validity) | validity %in% input$validity ) %>%
+            mutate(link =  paste0("<a href='",link,"' target='_blank'>",link,"</a>"))%>% 
             mutate(date = as.character(date)) %>%
-            arrange(desc(date)) %>%
-            mutate(link =  paste0("<a href='",link,"' target='_blank'>",link,"</a>"))
+            select(-number, -lat, -lon, -province) %>%
+            arrange(desc(date)) 
         DT::datatable(df, options = list(pageLength = 25), escape = F)
     })
 }
