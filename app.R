@@ -78,8 +78,14 @@ server <- function(input, output, session) {
         tryCatch(
             {lifelist.page <- paste(sep="","https://waarneming.nl/users/",input$userid,"/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on") %>%
                 read_html()%>%
-                html_node("table")%>%
-                html_table()
+                html_nodes("table")
+            
+            lifelist.page <- rbind( # Bind tables for species as well as subspecies and formas
+                html_table(lifelist.page[[1]])[2:3],
+                html_table(lifelist.page[[2]])[2:3],
+                html_table(lifelist.page[[3]])[2:3],
+                html_table(lifelist.page[[4]])[2:3]
+            )
             lifelist.page$naam}, 
             error = function(e) {
                 0
