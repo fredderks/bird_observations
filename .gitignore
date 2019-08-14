@@ -44,3 +44,6 @@ TODO.rtf
 
 # Folders
 rsconnect/
+*.dcf
+rsconnect/shinyapps.io/fredderks/bird_observations.dcf
+*.dcf
