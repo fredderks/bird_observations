@@ -1,4 +1,4 @@
-library(tidyverse);library(zoo);library(data.table);library(rsconnect);library(rvest);library(Hmisc);library(tcltk)
+library(tidyverse);library(lubridate);library(zoo);library(data.table);library(rsconnect);library(rvest);library(Hmisc);library(tcltk)
 
 ScrapeLiferObs <- function(province,rarity,oldfile) {
   
@@ -80,7 +80,6 @@ ScrapeLiferObs <- function(province,rarity,oldfile) {
   
   print(paste(length(obs.links.uncommon),"new observations found on date:",as.Date(date)))
   
-
 # Web scraping location details from all new observations -----------------
 
   # Progress bar
@@ -135,7 +134,6 @@ ScrapeLiferObs <- function(province,rarity,oldfile) {
   } # End of observation page
   
   df %<>% setorder(date)
-  
   
   filecomp <- tryCatch(
     {
