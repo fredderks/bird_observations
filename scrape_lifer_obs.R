@@ -1,10 +1,12 @@
-library(ggplot2);library(dplyr);library(ggpubr);library(zoo);library(tidyr);library(data.table);library(shiny);library(leaflet);library(lubridate);library(magrittr);library(stringr);library(purrr);library(rsconnect);library(rvest);library(Hmisc);library(tcltk)
+library(tidyverse);library(zoo);library(data.table);library(rsconnect);library(rvest);library(Hmisc);library(tcltk)
 
-ScrapeLiferObs <- function(userid,province,rarity,oldfile) {
+ScrapeLiferObs <- function(province,rarity,oldfile) {
+  
+  commonlist <- read.csv("commonlist.csv", header = T) # List of common species
   date <- today()
   uncertain <- 0
   nogps <- 0
-  exclusions <- c(" ssp ", " x ", " of ","(verwilderd)"," onbekend")
+  exclusions <- c(" ssp ", " x ", " of ","(verwilderd)"," onbekend") %>% paste(collapse= "|")
   df <- data.frame("date" = as.POSIXct(character()),
                    "species" = character(),
                    "rarity" = character(),
@@ -12,167 +14,127 @@ ScrapeLiferObs <- function(userid,province,rarity,oldfile) {
                    "number" = character(), 
                    "validity" = character(),
                    "link" = character(),
-                   "lat" = character(), 
-                   "lon" = character(),
+                   "lat" = numeric(), 
+                   "lon" = numeric(),
                    stringsAsFactors=FALSE)
+
+# Gathering URLs for new observations -------------------------------------
   
-  lifelist.link <- paste(sep="","https://waarneming.nl/users/",userid,"/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on") 
-  
-  lifelist.html <- read_html(lifelist.link)%>%
-    html_nodes("table")
-  
-  lifelist.names <- html_table(lifelist.html[[1]]) 
-  lifelist.names %<>% 
-    rbind(html_table(lifelist.html[[2]]))%>%
-    rbind(html_table(lifelist.html[[3]]))%>%
-    rbind(html_table(lifelist.html[[4]])) # Bind tables for species as well as subspecies and formas
-  lifelist.names <- lifelist.names[c(2,3)]
-  
-  lifelist.num <- lifelist.html[1:4]%>%
-    html_nodes("td[data-sort-value]")%>%
-    html_nodes("a[href*='/observations/?species=']")%>%
-    html_attr("href")
-  lifelist.names$num <- str_match(lifelist.num, "species=(.*?)&after_date")[,2] # Add matching species id numbers
-  
-  if (1413 %nin% lifelist.names[,3]){
-    lifelist.names %<>% rbind(c("Parkgans","Anser anser forma domestica",1413))
-  }  
-  if (1412 %nin% lifelist.names[,3]){
-    lifelist.names %<>% rbind(c("Parkeend","Anas platyrhynchos forma domestica",1412))
-  }  
-  if (80199 %nin% lifelist.names[,3]){
-    lifelist.names %<>% rbind(c("Stadsduif","Columba livia forma domestica",80199))
-  }
-  if (18926 %nin% lifelist.names[,3]){
-    lifelist.names %<>% rbind(c("Vogel onbekend","Aves indet.",18926))
-  }
+  ## Species Pages
   rootpage.html <- read_html(paste("https://waarneming.nl/fieldwork/observations/daylist/?date=",date,"&species_group=1&province=",province,"&rarity=",rarity,"&search=", sep=""))
-  species.links <- rootpage.html %>%  # On Root, Gather links to species specific pages of there is more than one observation of said species
+  species.pages <- rootpage.html %>%  # On Root, Gather links to species specific pages if there is more than one observation of said species
     html_nodes("table") %>% #  http://flukeout.github.io/ # https://www.w3schools.com/css/css_attribute_selectors.asp 
     html_nodes("a[href*='/species/']")
   
-  species.names <- species.links%>%
-    html_text() %>%
-    str_match(. ," (.*?) -") %>% .[,2]
-  species.links <- species.links %>%
-    html_attr("href")
+  species.pages <- tibble( name = 
+                             species.pages %>%
+                             html_text() %>%
+                             sub(' (.*) -.*','\\1',.), 
+                           url =
+                             species.pages %>%
+                             html_attr("href")) # Retrieve names and urls from all species observed today
   
-  species.excl <- grep(paste(exclusions,collapse="|"), 
-                       species.names, value=TRUE, invert = TRUE)
-  species.links <- subset(species.links,species.names %in% species.excl)
-  spec.links.lifer <- subset(species.links,species.excl %nin% lifelist.names$naam)# Only scrape links that are lifer species
+  spec.pages.uncommon <- species.pages %>% filter( 
+    !grepl(exclusions, name), # Only keep species that are not excluded 
+    !name %in% commonlist$naam # Only keep species that are not common species
+  )
   
-  # species.links <- as.data.frame(subset(species.links, grepl("observation", species.links)))
-  # species.links$num <- str_match(species.links[,1], "species/(.*?)/observations")[,2]
-  # spec.links.lifer <- as.vector(subset(species.links[,1],species.links[,2] %nin% lifelist.names$num)) 
-  
-  obs.links <- rootpage.html %>% # On Root page, Gather links to observation pages if they are linked directly, i.e. there is only one observation
+  ## Individual Observations Pages
+  obs.pages <- rootpage.html %>% # On Root page, Gather links to observation pages if they are linked directly, i.e. there is only one observation
     html_nodes("table") %>% 
     html_nodes("a[href*='/observation/']")
   
-  common.names <- obs.links %>%
-    html_text() %>%
-    str_match(. ," (.*?) -") %>% .[,2]
-  root.links <- obs.links %>%
-    html_attr("href")
+  obs.pages <- tibble( name = 
+                         obs.pages %>%
+                         html_text() %>%
+                         sub(' (.*) -.*','\\1',.), 
+                       url =
+                         obs.pages %>%
+                         html_attr("href")) # Retrieve names and urls from all observations made today
   
-  common.excl <- grep(paste(exclusions,collapse="|"), 
-                      common.names, value=TRUE, invert = TRUE)
+  obs.pages.uncommon <- obs.pages %>% filter( 
+    !grepl(exclusions, name), # Only keep observations that are not excluded 
+    !name %in% commonlist$naam # Only keep bservations that are not common species
+  )
+  obs.links.uncommon <- obs.pages.uncommon$url
   
-  root.links <- subset(root.links,common.names %in% common.excl)
-  
-  obs.links.lifer <- subset(root.links,common.excl %nin% lifelist.names$naam) # Only scrape links that are lifer species
-  
-  for (link in spec.links.lifer){ # On Species pages, gather links to individual observation pages
-    species.html <- read_html(paste("https://waarneming.nl",link,sep=""))
+  ## On Species pages, gather links to individual observation pages
+  for (link in spec.pages.uncommon$url){ # Open every species page 
+    species.html <- read_html(paste("https://waarneming.nl",link,sep=""))  
     
-    species.obs.links <- species.html %>%
+    species.obs.links <- species.html %>% # Retrieve unique URLs
       html_nodes("table") %>% 
       html_nodes("a[href*='/observation/']") %>%
       html_attr("href")
-    obs.links.lifer %<>%
-      append(species.obs.links, after = length(obs.links.lifer))
+    
+    obs.links.uncommon %<>%
+      append(species.obs.links, after = length(obs.links.uncommon)) # Append to existing observation URLs
   }
   
-  obs.links.old <- tryCatch(
-    {
-      obs.links.old <- readRDS(oldfile)[,7]
-      gsub("https://waarneming.nl", '',obs.links.old)
-    }, 
-    error = function(e) {
-      NULL
-    }
+  obs.links.old <- tryCatch( # Find all urls already retrieved when this script last ran
+    { gsub("https://waarneming.nl", '',readRDS(oldfile)[,7]) }, 
+    error = function(e) { NULL }
   )
   
-  obs.links.lifer <- setdiff(obs.links.lifer,obs.links.old) # finds non-overlapping elements that are contained in the first object
+  obs.links.uncommon <- setdiff(obs.links.uncommon,obs.links.old) # Finds non-overlapping elements that are contained in the first object
   
-  print(paste(length(obs.links.lifer),"new LIFER observations found on date:",as.Date(date)))
+  print(paste(length(obs.links.uncommon),"new observations found on date:",as.Date(date)))
   
-  total <- length(obs.links.lifer); ind <- 0
+
+# Web scraping location details from all new observations -----------------
+
+  # Progress bar
+  total <- length(obs.links.uncommon); ind <- 0
   pb <- tkProgressBar(title = "progress bar", min = 0,
                       max = total, width = 300)
   
-  for (link in obs.links.lifer){ # On all observation pages, gather the required info.
-    obs.link <- paste("https://waarneming.nl",link,sep="")
-    obs.html <- read_html(obs.link)
+  for (link in obs.links.uncommon){ # On all observation pages, gather the required info.
+    obs.url <- paste("https://waarneming.nl",link,sep="")
+    obs.html <- read_html(obs.url)
     
-    if (length(obs.html %>% # Test wether observation is certain
-               html_nodes("i[class*='fas fa-question-square status-uncertain fa-fw']")) == 0 ){
-      
-      obs.details <-
-        obs.html %>%
-        html_node("table.table") %>%
-        html_table() %>%
-        t() 
-      colnames(obs.details) <- obs.details[1,]
-      obs.details <- obs.details[-1,]
-      obs.details %<>%
-        t()%>%
-        data.frame()
-      
-      obs.date <- as.character(obs.details$datum)
-      obs.location <- as.character(obs.details$locatie)
-      obs.number <- obs.details$aantal %>%
-        as.character %>%
-        gsub('[[:space:]]', ' ', .)
+    if (length(obs.html %>% html_nodes("i[class*='fas fa-question-square status-uncertain fa-fw']")) == 0 ){ # Test wether observation is certain
       
       obs.gps <-
         obs.html %>%
         html_node("span.teramap-coordinates-coords")%>%
         html_text()
+      
       if (!is.na(obs.gps)){ # only continue if gps coordinates are present
-        obs.gps %<>%
-          str_split_fixed(", ",2)
-        obs.name <-
-          obs.html %>%
-          html_node("span.species-common-name")%>%
-          html_text()
-        obs.rarity <-
-          obs.html %>%
-          html_node("span.hidden-xs")%>%
-          html_text()
-        obs.validity <-
-          obs.html %>%
-          html_node("td.validation-status-text")%>%
-          html_text() 
         
-        if (grepl("goedgekeurd", obs.validity)){
-          obs.validity <- "confirmed"
-        } else if(grepl("onbekend", obs.validity)){
-          obs.validity <- "unknown"
+        obs.details <- # Gather all the details from the observation page
+          obs.html %>%
+          html_node("table.table") %>%
+          html_table() %>%
+          data.frame(row.names = .[,1])%>%
+          select(-X1)%>%
+          t()%>%
+          data.frame(stringsAsFactors = F)%>%
+          mutate(
+            lat = str_split_fixed(string = obs.gps, pattern = ", ", n = 2)[1] %>% as.numeric(),
+            lon = str_split_fixed(string = obs.gps, pattern = ", ", n = 2)[2] %>% as.numeric(),
+            name = obs.html %>% html_node("span.species-common-name") %>% html_text(),
+            rarity =  obs.html %>% html_node("span.hidden-xs") %>% html_text(),
+            validity =   obs.html %>% html_node("td.validation-status-text") %>% html_text(),
+            url = obs.url
+          )
+        
+        if (grepl("goedgekeurd", obs.details$validity)){ # Rename validity markers
+          obs.details$validity <- "confirmed"
+        } else if(grepl("onbekend", obs.details$validity)){
+          obs.details$validity <- "unknown"
         } else {
-          obs.validity <- "other"
+          obs.details$validity <- "other"
         }
-        df[nrow(df)+1,] <- c(obs.date,obs.name,obs.rarity,obs.location,obs.number,obs.validity,obs.link,obs.gps[1],obs.gps[2])
-      } else {nogps <- nogps + 1}
-    } else {uncertain <- uncertain + 1}
+        
+        df[nrow(df)+1,] <- obs.details %>% select(datum, name, rarity, locatie, aantal ,validity, url, lat, lon)
+      } else {nogps <- nogps + 1} # Count number of obs skipped because they are without gps coordinates (embargo)
+    } else {uncertain <- uncertain + 1} # Count number of obs skipped because they are uncertain
+    
     ind <- ind + 1
-    setTkProgressBar(pb, ind, label=paste( round(ind/total*100, 0),
-                                           "% done"))
+    setTkProgressBar(pb, ind, label=paste( round(ind/total*100, 0), "% done"))
   } # End of observation page
+  
   df %<>% setorder(date)
-  df$lat %<>% as.numeric()
-  df$lon %<>% as.numeric()
   
   
   filecomp <- tryCatch(
@@ -187,6 +149,6 @@ ScrapeLiferObs <- function(userid,province,rarity,oldfile) {
   
   saveRDS(filecomp,paste("LIFER_obs_",province,"_",today(),".rds",sep=""))
   print(paste("Missing values:", uncertain, "uncertain,", nogps,"without gps coordinates."))
-  print(paste(length(unique(df$species)),"new LIFER species were observed today."))
+  print(paste(length(unique(df$species)),"new uncommon species were observed today."))
   close(pb)
 }

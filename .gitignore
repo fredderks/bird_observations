@@ -40,6 +40,7 @@ vignettes/*.pdf
 *.dcf
 *.txt
 test.R
+TODO.rtf
 
 # Folders
 rsconnect/
