@@ -1,0 +1,141 @@
+naam,wetenschappelijke naam,num
+Fazant,Phasianus colchicus,88
+Rotgans,Branta bernicla,172
+Grote Canadese Gans,Branta canadensis,110
+Brandgans,Branta leucopsis,79
+Indische Gans,Anser indicus,124
+Keizergans,Anser canagicus,1408
+Grauwe Gans,Anser anser,104
+Toendrarietgans,Anser serrirostris,341
+Zwarte Zwaan,Cygnus atratus,212
+Knobbelzwaan,Cygnus olor,136
+Wilde Zwaan,Cygnus cygnus,351
+Nijlgans,Alopochen aegyptiaca,152
+Bergeend,Tadorna tadorna,61
+Muskuseend,Cairina moschata,151
+Slobeend,Spatula clypeata,175
+Krakeend,Mareca strepera,142
+Smient,Mareca penelope,176
+Wilde Eend,Anas platyrhynchos,198
+Wintertaling,Anas crecca,200
+Tafeleend,Aythya ferina,184
+Kuifeend,Aythya fuligula,144
+Eider,Somateria mollissima,11
+Brilduiker,Bucephala clangula,80
+Grote Zaagbek,Mergus merganser,114
+Gierzwaluw,Apus apus,97
+Koekoek,Cuculus canorus,137
+Stadsduif,Columba livia forma domestica,80199
+Holenduif,Columba oenas,119
+Houtduif,Columba palumbus,120
+Zomertortel,Streptopelia turtur,342
+Turkse Tortel,Streptopelia decaocto,191
+Waterhoen,Gallinula chloropus,195
+Meerkoet,Fulica atra,149
+Dodaars,Tachybaptus ruficollis,2
+Fuut,Podiceps cristatus,91
+Scholekster,Haematopus ostralegus,173
+Kluut,Recurvirostra avosetta,20
+Kievit,Vanellus vanellus,129
+Zilverplevier,Pluvialis squatarola,206
+Bontbekplevier,Charadrius hiaticula,22
+Kleine Plevier,Charadrius dubius,761
+Regenwulp,Numenius phaeopus,163
+Wulp,Numenius arquata,203
+Rosse Grutto,Limosa lapponica,170
+Grutto,Limosa limosa,26
+Steenloper,Arenaria interpres,182
+Kanoet,Calidris canutus,125
+Drieteenstrandloper,Calidris alba,83
+Bonte Strandloper,Calidris alpina,68
+Watersnip,Gallinago gallinago,25
+Tureluur,Tringa totanus,27
+Kokmeeuw,Chroicocephalus ridibundus,138
+Stormmeeuw,Larus canus,183
+Zilvermeeuw,Larus argentatus,205
+Kleine Mantelmeeuw,Larus fuscus,131
+Grote Stern,Thalasseus sandvicensis,28
+Dwergstern,Sternula albifrons,31
+Visdief,Sterna hirundo,29
+Noordse Stern,Sterna paradisaea,30
+Ooievaar,Ciconia ciconia,7
+Aalscholver,Phalacrocorax carbo,58
+Lepelaar,Platalea leucorodia,8
+Blauwe Reiger,Ardea cinerea,64
+Grote Zilverreiger,Ardea alba,115
+Sperwer,Accipiter nisus,178
+Havik,Accipiter gentilis,117
+Bruine Kiekendief,Circus aeruginosus,81
+Buizerd,Buteo buteo,82
+IJsvogel,Alcedo atthis,37
+Grote Bonte Specht,Dendrocopos major,109
+Zwarte Specht,Dryocopus martius,759
+Torenvalk,Falco tinnunculus,188
+Boomvalk,Falco subbuteo,74
+Slechtvalk,Falco peregrinus,325
+Halsbandparkiet,Psittacula krameri,116
+Gaai,Garrulus glandarius,92
+Ekster,Pica pica,87
+Kauw,Coloeus monedula,126
+Roek,Corvus frugilegus,167
+Zwarte Kraai,Corvus corone,208
+Raaf,Corvus corax,54
+Kuifmees,Lophophanes cristatus,145
+Glanskop,Poecile palustris,98
+Matkop,Poecile montanus,148
+Pimpelmees,Cyanistes caeruleus,161
+Koolmees,Parus major,140
+Boomleeuwerik,Lullula arborea,72
+Veldleeuwerik,Alauda arvensis,192
+Oeverzwaluw,Riparia riparia,155
+Boerenzwaluw,Hirundo rustica,65
+Huiszwaluw,Delichon urbicum,123
+Staartmees,Aegithalos caudatus,181
+Fitis,Phylloscopus trochilus,89
+Tjiftjaf,Phylloscopus collybita,186
+Rietzanger,Acrocephalus schoenobaenus,48
+Kleine Karekiet,Acrocephalus scirpaceus,130
+Bosrietzanger,Acrocephalus palustris,75
+Sprinkhaanzanger,Locustella naevia,330
+Zwartkop,Sylvia atricapilla,213
+Tuinfluiter,Sylvia borin,189
+Braamsluiper,Sylvia curruca,78
+Grasmus,Sylvia communis,102
+Goudhaan,Regulus regulus,99
+Winterkoning,Troglodytes troglodytes,199
+Boomklever,Sitta europaea,70
+Boomkruiper,Certhia brachydactyla,71
+Spreeuw,Sturnus vulgaris,180
+Merel,Turdus merula,150
+Kramsvogel,Turdus pilaris,143
+Koperwiek,Turdus iliacus,141
+Zanglijster,Turdus philomelos,204
+Grote Lijster,Turdus viscivorus,111
+Grauwe Vliegenvanger,Muscicapa striata,105
+Roodborst,Erithacus rubecula,168
+Blauwborst,Luscinia svecica,62
+Bonte Vliegenvanger,Ficedula hypoleuca,69
+Zwarte Roodstaart,Phoenicurus ochruros,356
+Gekraagde Roodstaart,Phoenicurus phoenicurus,94
+Roodborsttapuit,Saxicola rubicola,45
+Tapuit,Oenanthe oenanthe,46
+Huismus,Passer domesticus,122
+Heggenmus,Prunella modularis,118
+Gele Kwikstaart,Motacilla flava,95
+Witte Kwikstaart,Motacilla alba,202
+Graspieper,Anthus pratensis,103
+Boompieper,Anthus trivialis,73
+Vink,Fringilla coelebs,193
+Keep,Fringilla montifringilla,127
+Appelvink,Coccothraustes coccothraustes,59
+Goudvink,Pyrrhula pyrrhula,101
+Groenling,Chloris chloris,261771
+Kneu,Linaria cannabina,135
+Putter,Carduelis carduelis,162
+Sijs,Spinus spinus,174
+Rietgors,Emberiza schoeniclus,164
+Noordse Stern of Visdief,Sterna paradisaea / Sterna hirundo,1986
+Witsterblauwborst,Luscinia svecica cyanecula,87222
+Parkgans,Anser anser forma domestica,1413
+Parkeend,Anas platyrhynchos forma domestica,1412
+Vogel onbekend,Aves indet.,18926
