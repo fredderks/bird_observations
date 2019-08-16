@@ -1,17 +1,21 @@
 #
-# This Shiny Web Applicaton takes data gathered from waarnemingen.nl and plots bird obserations
-# on a map. The slider can be used to reveal the observations chronologically
+# This is a Shiny web application. You can run the application by clicking
+# the 'Run App' button above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    http://shiny.rstudio.com/
 #
 library(ggplot2);library(dplyr);library(tidyr);library(data.table);library(leaflet);library(leaflet.extras)
-library(lubridate);library(magrittr);library(stringr);library(purrr);library(shiny);library(rvest)
+library(lubridate);library(magrittr);library(stringr);library(purrr);library(shiny);library(rvest);library(glue)
 
 myIcons <- iconList("algemeen" = makeIcon("green.png", iconWidth = 18, iconHeight = 24), 
                     "vrij algemeen" = makeIcon("blue.png", iconWidth = 18, iconHeight = 24),
                     "zeldzaam" = makeIcon("amber.png", iconWidth = 18, iconHeight =24),
                     "zeer zeldzaam" = makeIcon("red.png", iconWidth = 18, iconHeight =24))
-
-provdata <- readRDS(paste(sep="","LIFER_obs_",0,"_",today(),".rds")) %>% 
-    mutate(province = sub(".* ", "", location))
+file <- paste(sep="","LIFER_obs_",0,"_",today(),".rds")
+provdata <- readRDS(file)
+provdata$province <- sub(".* ", "", provdata$location)
 
 provinces <- c("All Provinces"="", "Drenthe"="(DR)", "Flevoland"="(FL)", "Friesland"="(FR)",
                "Gelderland"="(GE)", "Groningen"="(GR)", "Limburg"="(LI)", "Noord-Brabant"="(NB)",
@@ -19,24 +23,26 @@ provinces <- c("All Provinces"="", "Drenthe"="(DR)", "Flevoland"="(FL)", "Friesl
                "Zeeland"="(ZL)")
 
 #### Define UI for application that draws a map plotting bird observations ####
-ui <- navbarPage("Observations Map",
-    tabPanel("Interactive Observations Map",
+ui <- navbarPage(span(tags$i(class = "fas fa-binoculars fa-lg"),style="font-size:140%;"), windowTitle = "Observations Map",
+    tabPanel(span(tags$i(class = "fas fa-map-marked-alt fa-lg"),
+                "Interactive Observations Map",style="font-size:130%;"),
         div(class="outer",
             tags$head(
                 # Include our custom CSS
                 includeCSS("styles.css"),
                 tags$script(src = "message-handler.js"),
-                tags$link(rel="shortcut icon", href="parroticon.png")
+                tags$link(rel="shortcut icon", href="parroticon.png"),
+                tags$script(src= "https://kit.fontawesome.com/0d5117e2fa.js")
                 ),
         leafletOutput("mymap", width = "100%", height = "100%"),
-        absolutePanel(top = 20, left = 70, width = 300,
+        absolutePanel(top = 10, left = 70, width = 300,
                       wellPanel(
-                          sliderInput("time", "Date of observation", 
+                          sliderInput("time", p(tags$i(class = "fas fa-calendar-alt"),"Date of observation"), 
                                       floor_date(today()-7), 
                                       ceiling_date(Sys.time(),"hours"),
                                       value = c(floor_date(today()),ceiling_date(Sys.time(),"hours")),
                                       step=3600, ticks = F),
-                          textInput("userid", "Waarneming.nl User ID", value = "130065", width = 140),
+                          textInput("userid",  p(tags$i(class = "fas fa-id-badge"),"Waarneming.nl User ID"), value = "130065", width = 170),
                           radioButtons("lifer","",
                                        choices = list("Only show LIFERs" = 1, "Show all observations" = 2), 
                                        selected = 1)
@@ -45,28 +51,33 @@ ui <- navbarPage("Observations Map",
             )
         )
     ),
-    tabPanel("Data Explorer",
+    tabPanel(span(tags$i(class = "fas fa-database fa-lg"),
+                "Data Explorer", style="font-size:130%;"),
              fluidRow(
-                 column(3, selectInput("province", "Province", choices = provinces, multiple=TRUE)
+                 column(3, selectInput("province", "Province", choices = provinces, multiple=TRUE),
+                        p(tags$i(class = "fas fa-edit"),glue('Last updated at: {file.info(file)$mtime}'))
                         ),
                  column(5, sliderInput("date", "Date of observation", 
                                        floor_date(min(provdata$date),"hours"), 
                                        ceiling_date(Sys.time(),"hours"),
                                        value = c(floor_date(today()),ceiling_date(Sys.time(),"hours")),
-                                       step=3600, ticks = T, width = 500)
+                                       step=3600, ticks = T, width = 600)
                         ),
-                 column(4, checkboxGroupInput("rarity", "Rarity of observation",
+                 column(1, checkboxGroupInput("rarity", "Rarity",
                                               choices = c("algemeen", "vrij algemeen","zeldzaam", "zeer zeldzaam"), 
-                                              selected = c("algemeen", "vrij algemeen","zeldzaam", "zeer zeldzaam"),
-                                              inline = T),
-                        checkboxGroupInput("validity", "Validity of observation",
-                                           choices = c("confirmed", "unknown","other"),
-                                           selected = c("confirmed", "unknown","other"),
-                                           inline = T)
-                        )
+                                              selected = c("algemeen", "vrij algemeen","zeldzaam", "zeer zeldzaam"))
+                        ),
+                 column(1, checkboxGroupInput("validity", "Validity",
+                                              choices = c("confirmed", "unknown","other"),
+                                              selected = c("confirmed", "unknown","other"))
+                        ),
+                 column(2, h4(a("Code is available on GitHub ",tags$i(class = "fab fa-github"), 
+                               href = "https://github.com/fredderks/bird_observations"))
+                 )
              ),
-             hr(),
+             # hr(),
              DT::dataTableOutput("obstable")
+             
     )
 )
 
@@ -76,16 +87,9 @@ server <- function(input, output, session) {
 
     lifelist <- reactive({
         tryCatch(
-            {lifelist.page <- paste(sep="","https://waarneming.nl/users/",input$userid,"/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on") %>%
-                read_html()%>%
-                html_nodes("table")
-            
-            lifelist.page <- rbind( # Bind tables for species as well as subspecies and formas
-                html_table(lifelist.page[[1]])[2:3],
-                html_table(lifelist.page[[2]])[2:3],
-                html_table(lifelist.page[[3]])[2:3],
-                html_table(lifelist.page[[4]])[2:3]
-            )
+            {lifelist.page <- read_html(paste(sep="","https://waarneming.nl/users/",input$userid,"/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on"))%>%
+                html_node("table")%>%
+                html_table()
             lifelist.page$naam}, 
             error = function(e) {
                 0
@@ -102,9 +106,9 @@ server <- function(input, output, session) {
     })
     
     filteredData <- reactive({
-        liferdata() %>% 
-            filter(date >= input$time[1] & date <=  input$time[2]) %>% 
-            arrange(match(rarity, c("algemeen", "vrij algemeen", "zeldzaam", "zeer zeldzaam")))
+        from<- input$time[1]
+        till<- input$time[2]
+        liferdata() %>% filter(date >= from & date <=  till) %>% arrange(match(rarity, c("algemeen", "vrij algemeen", "zeldzaam", "zeer zeldzaam")))
     })
     
     labelcontent <- reactive({
@@ -115,7 +119,6 @@ server <- function(input, output, session) {
               "<br/><a href=",filteredData()$link," target='_blank'>",filteredData()$link,"</a>")
     })
     
-    #### Map
     output$mymap <- renderLeaflet({
         leaflet() %>%
             addTiles() %>%
@@ -143,11 +146,12 @@ server <- function(input, output, session) {
                     date <= input$date[2],
                     is.null(input$province) | province %in% input$province,
                     is.null(input$rarity) | rarity %in% input$rarity,
-                    is.null(input$validity) | validity %in% input$validity ) %>%
-            mutate(link =  paste0("<a href='",link,"' target='_blank'>",link,"</a>"))%>% 
-            mutate(date = as.character(date)) %>%
+                    is.null(input$validity) | validity %in% input$validity
+                    ) %>% 
             select(-number, -lat, -lon, -province) %>%
-            arrange(desc(date)) 
+            mutate(date = as.character(date)) %>%
+            arrange(desc(date)) %>%
+            mutate(link =  paste0("<a href='",link,"' target='_blank'>",link,"</a>"))
         DT::datatable(df, options = list(pageLength = 25), escape = F)
     })
 }

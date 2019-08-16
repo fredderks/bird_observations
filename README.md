@@ -1,4 +1,4 @@
-# bird_observations
+# Bird Observations
 This webapp is created to give a chronological overview of observations users have made of birds in the Netherlands using the platform waarnemingen.nl
 
 ![Bird Observations Map Demo](demo/bird_obs_demo.gif)

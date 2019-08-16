@@ -4,7 +4,7 @@ input[type="number"] {
 
 .outer {
   position: fixed;
-  top: 41px;
+  top: 56px; /* 41px if using tab panels */
   left: 0;
   right: 0;
   bottom: 0;
