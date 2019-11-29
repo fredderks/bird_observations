@@ -11,37 +11,37 @@ library(lubridate);library(magrittr);library(stringr);library(purrr);library(shi
 
 myIcons <- iconList("algemeen" = makeIcon("green.png", iconWidth = 18, iconHeight = 24), 
                     "vrij algemeen" = makeIcon("blue.png", iconWidth = 18, iconHeight = 24),
-                    "zeldzaam" = makeIcon("amber.png", iconWidth = 18, iconHeight =24),
-                    "zeer zeldzaam" = makeIcon("red.png", iconWidth = 18, iconHeight =24))
-file <- paste(sep="","LIFER_obs_",0,"_",today(),".rds")
+                    "zeldzaam" = makeIcon("amber.png", iconWidth = 18, iconHeight = 24),
+                    "zeer zeldzaam" = makeIcon("red.png", iconWidth = 18, iconHeight = 24))
+file <- list.files(pattern = ".rds") %>% max()
 provdata <- readRDS(file)
 provdata$province <- sub(".* ", "", provdata$location)
 
-provinces <- c("All Provinces"="", "Drenthe"="(DR)", "Flevoland"="(FL)", "Friesland"="(FR)",
-               "Gelderland"="(GE)", "Groningen"="(GR)", "Limburg"="(LI)", "Noord-Brabant"="(NB)",
-               "Noord-Holland"="(NH)", "Overijssel"="(OV)", "Zuid-Holland"="(ZH)", "Utrecht"="(UT)",
-               "Zeeland"="(ZL)")
+provinces <- c("All Provinces" = "", "Drenthe" = "(DR)", "Flevoland" = "(FL)", "Friesland" = "(FR)",
+               "Gelderland" = "(GE)", "Groningen" = "(GR)", "Limburg" = "(LI)", "Noord-Brabant" = "(NB)",
+               "Noord-Holland" = "(NH)", "Overijssel" = "(OV)", "Zuid-Holland" = "(ZH)", "Utrecht" = "(UT)",
+               "Zeeland" = "(ZL)")
 
 #### Define UI for application that draws a map plotting bird observations ####
-ui <- navbarPage(span(tags$i(class = "fas fa-binoculars fa-lg"),style="font-size:140%;"), windowTitle = "Observations Map",
+ui <- navbarPage(span(tags$i(class = "fas fa-binoculars fa-lg"),style = "font-size:140%;"), windowTitle = "Observations Map",
     tabPanel(span(tags$i(class = "fas fa-map-marked-alt fa-lg"),
-                "Interactive Observations Map",style="font-size:130%;"),
-        div(class="outer",
+                "Interactive Observations Map",style = "font-size:130%;"),
+        div(class = "outer",
             tags$head(
                 # Include our custom CSS
                 includeCSS("styles.css"),
                 tags$script(src = "message-handler.js"),
-                tags$link(rel="shortcut icon", href="parroticon.png"),
-                tags$script(src= "https://kit.fontawesome.com/0d5117e2fa.js")
+                tags$link(rel = "shortcut icon", href = "parroticon.png"),
+                tags$script(src = "https://kit.fontawesome.com/0d5117e2fa.js")
                 ),
         leafletOutput("mymap", width = "100%", height = "100%"),
         absolutePanel(top = 10, left = 70, width = 300,
                       wellPanel(
                           sliderInput("time", p(tags$i(class = "fas fa-calendar-alt"),"Date of observation"), 
-                                      floor_date(today()-7), 
-                                      ceiling_date(Sys.time(),"hours"),
-                                      value = c(floor_date(today()),ceiling_date(Sys.time(),"hours")),
-                                      step=3600, ticks = F),
+                                      floor_date(min(provdata$date),"hours"), 
+                                      ceiling_date(max(provdata$date),"hours"),
+                                      value = c(floor_date(min(provdata$date)),ceiling_date(max(provdata$date),"hours")),
+                                      step = 3600, ticks = F),
                           textInput("userid",  p(tags$i(class = "fas fa-id-badge"),"Waarneming.nl User ID"), value = "130065", width = 170),
                           radioButtons("lifer","",
                                        choices = list("Only show LIFERs" = 1, "Show all observations" = 2), 
@@ -52,16 +52,16 @@ ui <- navbarPage(span(tags$i(class = "fas fa-binoculars fa-lg"),style="font-size
         )
     ),
     tabPanel(span(tags$i(class = "fas fa-database fa-lg"),
-                "Data Explorer", style="font-size:130%;"),
+                "Data Explorer", style = "font-size:130%;"),
              fluidRow(
-                 column(3, selectInput("province", "Province", choices = provinces, multiple=TRUE),
+                 column(3, selectInput("province", "Province", choices = provinces, multiple = TRUE),
                         p(tags$i(class = "fas fa-edit"),glue('Last updated at: {file.info(file)$mtime}'))
                         ),
                  column(5, sliderInput("date", "Date of observation", 
                                        floor_date(min(provdata$date),"hours"), 
-                                       ceiling_date(Sys.time(),"hours"),
-                                       value = c(floor_date(today()),ceiling_date(Sys.time(),"hours")),
-                                       step=3600, ticks = T, width = 600)
+                                       ceiling_date(max(provdata$date),"hours"),
+                                       value = c(floor_date(min(provdata$date)),ceiling_date(max(provdata$date),"hours")),
+                                       step = 3600, ticks = T, width = 600)
                         ),
                  column(1, checkboxGroupInput("rarity", "Rarity",
                                               choices = c("algemeen", "vrij algemeen","zeldzaam", "zeer zeldzaam"), 
@@ -87,8 +87,9 @@ server <- function(input, output, session) {
 
     lifelist <- reactive({
         tryCatch(
-            {lifelist.page <- read_html(paste(sep="","https://waarneming.nl/users/",input$userid,"/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on"))%>%
-                html_node("table")%>%
+            {lifelist.page <- read_html(paste(sep = "","https://waarneming.nl/users/",input$userid,
+                                              "/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on")) %>%
+                html_node("table") %>%
                 html_table()
             lifelist.page$naam}, 
             error = function(e) {
@@ -98,7 +99,7 @@ server <- function(input, output, session) {
     })
     
     liferdata <- reactive({
-        if (input$lifer == 1){
+        if (input$lifer == 1) {
            provdata[!provdata$species %in% lifelist(), ] # https://stackoverflow.com/questions/15227887
         } else {
            provdata
@@ -106,13 +107,13 @@ server <- function(input, output, session) {
     })
     
     filteredData <- reactive({
-        from<- input$time[1]
-        till<- input$time[2]
+        from <- input$time[1]
+        till <- input$time[2]
         liferdata() %>% filter(date >= from & date <=  till) %>% arrange(match(rarity, c("algemeen", "vrij algemeen", "zeldzaam", "zeer zeldzaam")))
     })
     
     labelcontent <- reactive({
-        paste(sep="",
+        paste(sep = "",
               "<b>",filteredData()$species,"</b>&emsp;[",filteredData()$rarity,"]",
               "<br/>Seen on ",as.POSIXct(filteredData()$date, tz = "CEST"),
               "<br/>Location: ",filteredData()$location,
@@ -123,7 +124,7 @@ server <- function(input, output, session) {
         leaflet() %>%
             addTiles() %>%
             addProviderTiles("OpenStreetMap.HOT", group = "OSM") %>%
-            addProviderTiles("Esri.WorldImagery",group = "Satellite")%>%
+            addProviderTiles("Esri.WorldImagery",group = "Satellite") %>%
             setView(lat = 52.2, lng = 5.5, zoom = 8) %>%
             addControlGPS(options = gpsOptions(position = "topleft", activate = FALSE, 
                                                autoCenter = TRUE, maxZoom = 11, 
@@ -133,7 +134,7 @@ server <- function(input, output, session) {
     observe({
         leafletProxy("mymap", data = filteredData()) %>%
             clearMarkers() %>%
-            addMarkers(icon = ~myIcons[rarity],~lon, ~lat, popup = labelcontent(), group = ~rarity)%>%
+            addMarkers(icon = ~myIcons[rarity],~lon, ~lat, popup = labelcontent(), group = ~rarity) %>%
             addLayersControl(baseGroups = c("OSM", "Satellite"),
                              options = layersControlOptions(collapsed = FALSE),
                              overlayGroups = ~rarity)
