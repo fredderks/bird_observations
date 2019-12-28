@@ -88,10 +88,10 @@ server <- function(input, output, session) {
     lifelist <- reactive({
         tryCatch(
             {lifelist.page <- read_html(paste(sep = "","https://waarneming.nl/users/",input$userid,
-                                              "/species/?species_group=1&start_date=&end_date=&province=0&use_local_taxonomy=on&include_exotic_and_extinct=on&include_escapes=on")) %>%
+                                              "/species/?period=life&species_group_id=1&start_date=&end_date=&province_id=0&include_exotic_and_extinct=on&use_local_taxonomy=on&include_escapes=on")) %>%
                 html_node("table") %>%
                 html_table()
-            lifelist.page$naam}, 
+            lifelist.page$Naam}, 
             error = function(e) {
                 0
             }

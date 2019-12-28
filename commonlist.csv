@@ -39,8 +39,6 @@ Kluut,Recurvirostra avosetta,20
 Kievit,Vanellus vanellus,129
 Zilverplevier,Pluvialis squatarola,206
 Bontbekplevier,Charadrius hiaticula,22
-Kleine Plevier,Charadrius dubius,761
-Regenwulp,Numenius phaeopus,163
 Wulp,Numenius arquata,203
 Rosse Grutto,Limosa lapponica,170
 Grutto,Limosa limosa,26
@@ -55,7 +53,6 @@ Stormmeeuw,Larus canus,183
 Zilvermeeuw,Larus argentatus,205
 Kleine Mantelmeeuw,Larus fuscus,131
 Grote Stern,Thalasseus sandvicensis,28
-Dwergstern,Sternula albifrons,31
 Visdief,Sterna hirundo,29
 Noordse Stern,Sterna paradisaea,30
 Ooievaar,Ciconia ciconia,7
@@ -69,7 +66,6 @@ Bruine Kiekendief,Circus aeruginosus,81
 Buizerd,Buteo buteo,82
 IJsvogel,Alcedo atthis,37
 Grote Bonte Specht,Dendrocopos major,109
-Zwarte Specht,Dryocopus martius,759
 Torenvalk,Falco tinnunculus,188
 Boomvalk,Falco subbuteo,74
 Slechtvalk,Falco peregrinus,325
@@ -87,7 +83,6 @@ Pimpelmees,Cyanistes caeruleus,161
 Koolmees,Parus major,140
 Boomleeuwerik,Lullula arborea,72
 Veldleeuwerik,Alauda arvensis,192
-Oeverzwaluw,Riparia riparia,155
 Boerenzwaluw,Hirundo rustica,65
 Huiszwaluw,Delichon urbicum,123
 Staartmees,Aegithalos caudatus,181
@@ -95,8 +90,6 @@ Fitis,Phylloscopus trochilus,89
 Tjiftjaf,Phylloscopus collybita,186
 Rietzanger,Acrocephalus schoenobaenus,48
 Kleine Karekiet,Acrocephalus scirpaceus,130
-Bosrietzanger,Acrocephalus palustris,75
-Sprinkhaanzanger,Locustella naevia,330
 Zwartkop,Sylvia atricapilla,213
 Tuinfluiter,Sylvia borin,189
 Braamsluiper,Sylvia curruca,78
@@ -110,7 +103,6 @@ Merel,Turdus merula,150
 Kramsvogel,Turdus pilaris,143
 Koperwiek,Turdus iliacus,141
 Zanglijster,Turdus philomelos,204
-Grote Lijster,Turdus viscivorus,111
 Grauwe Vliegenvanger,Muscicapa striata,105
 Roodborst,Erithacus rubecula,168
 Blauwborst,Luscinia svecica,62
@@ -134,8 +126,6 @@ Kneu,Linaria cannabina,135
 Putter,Carduelis carduelis,162
 Sijs,Spinus spinus,174
 Rietgors,Emberiza schoeniclus,164
-Noordse Stern of Visdief,Sterna paradisaea / Sterna hirundo,1986
-Witsterblauwborst,Luscinia svecica cyanecula,87222
 Parkgans,Anser anser forma domestica,1413
 Parkeend,Anas platyrhynchos forma domestica,1412
 Vogel onbekend,Aves indet.,18926
