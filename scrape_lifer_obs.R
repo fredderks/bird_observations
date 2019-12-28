@@ -84,7 +84,7 @@ ScrapeLiferObs <- function(province,rarity,oldfile) {
 
   # Progress bar
   total <- length(obs.links.uncommon); ind <- 0
-  pb <- tkProgressBar(title = "progress bar", min = 0,
+  pb <- tkProgressBar(title = "fetching observations", min = 0,
                       max = total, width = 300)
   
   for (link in obs.links.uncommon) { # On all observation pages, gather the required info.
