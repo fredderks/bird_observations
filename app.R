@@ -45,7 +45,7 @@ ui <- navbarPage(span(tags$i(class = "fas fa-binoculars fa-lg"),style = "font-si
                           textInput("userid",  p(tags$i(class = "fas fa-id-badge"),"Waarneming.nl User ID"), value = "130065", width = 170),
                           radioButtons("lifer","",
                                        choices = list("Only show LIFERs" = 1, "Show all observations" = 2), 
-                                       selected = 1)
+                                       selected = 2)
                           ), 
                       style = "opacity: 0.92" # https://shiny.rstudio.com/gallery/absolutely-positioned-panels.html
             )
