@@ -78,7 +78,7 @@ ScrapeLiferObs <- function(province,rarity,oldfile) {
 
   obs.links.uncommon <- setdiff(obs.links.uncommon,obs.links.old) # Finds non-overlapping elements that are contained in the first object
   
-  print(paste(length(obs.links.uncommon),"new observations found on date:",as.Date(date)))
+  cat(paste(length(obs.links.uncommon),"new observations found on date:",as.Date(date)),"\n")
   
 # Web scraping location details from all new observations -----------------
 
@@ -146,7 +146,7 @@ ScrapeLiferObs <- function(province,rarity,oldfile) {
   )
   
   saveRDS(filecomp,paste("LIFER_obs_",province,"_",today(),".rds",sep = ""))
-  print(paste("Missing values:", uncertain, "uncertain,", nogps,"without gps coordinates."))
-  print(paste(length(unique(df$species)),"new uncommon species were observed today."))
+  cat(paste("Missing values:", uncertain, "uncertain,", nogps,"without gps coordinates."),"\n")
+  cat(paste(length(unique(df$species)),"new uncommon species were observed today."),"\n")
   close(pb)
 }
