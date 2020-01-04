@@ -1,5 +1,6 @@
 library(magrittr);library(lubridate);library(zoo);library(data.table);library(rsconnect);library(rvest)
 library(Hmisc);library(tcltk);library(selectr);library(tibble);library(dplyr);library(stringr)
+
 ScrapeLiferObs <- function(province,rarity,oldfile) {
   
   commonlist <- read.csv("commonlist.csv", header = T) # List of common species
@@ -144,9 +145,11 @@ ScrapeLiferObs <- function(province,rarity,oldfile) {
       df
     }
   )
-  
-  saveRDS(filecomp,paste("LIFER_obs_",province,"_",today(),".rds",sep = ""))
+  filename <- paste("LIFER_obs_",province,"_",today(),".rds",sep = "")
   cat(paste("Missing values:", uncertain, "uncertain,", nogps,"without gps coordinates."),"\n")
   cat(paste(length(unique(df$species)),"new uncommon species were observed today."),"\n")
+  saveRDS(filecomp,filename)
+  cat(paste("Data saved as:", filename),"\n")
+  closeAllConnections()
   close(pb)
 }
