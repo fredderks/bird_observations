@@ -1,9 +1,14 @@
 #### install and load the required packages ####
-for (package in c('readr','broom', 'tidyverse', 'lubridate', 'ggpubr', 'zoo', 'data.table', 'shiny', 'rsconnect', 'Hmisc',
-                  'rvest', 'tcltk', 'packrat', 'plogr','BH', 'svDialogs')) {
+packages <- c('readr','broom', 'tidyverse', 'lubridate', 'ggpubr', 'zoo', 'data.table', 'shiny', 'rsconnect', 'Hmisc',
+              'rvest', 'tcltk', 'packrat', 'plogr','BH', 'svDialogs','DT','leaflet','leaflet.extras')
+
+for (package in packages) {
   if (!require(package, character.only = T)) {
-    print(paste('installing:', package))
+    print(paste('installing package:', package))
     install.packages(package) }
+}
+
+for (package in packages) {
   library(package, character.only = T)
 }
 
@@ -55,6 +60,7 @@ ConnectShinyapps <- function() {
 
 PublishObservations <- function() {
   connection <- FALSE
+  setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
   source("scrape_lifer_obs.R")
   sink("log.txt", append = TRUE, split = TRUE)
   connection <- ConnectShinyapps()
@@ -86,3 +92,4 @@ PublishObservations <- function() {
 #### Scrape data for all LIFER species observed today ####
 
 PublishObservations()
+ 

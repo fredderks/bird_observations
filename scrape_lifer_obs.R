@@ -113,7 +113,7 @@ ScrapeLiferObs <- function(province,rarity,oldfile) {
             lat = str_split_fixed(string = obs.gps, pattern = ", ", n = 2)[1] %>% as.numeric(),
             lon = str_split_fixed(string = obs.gps, pattern = ", ", n = 2)[2] %>% as.numeric(),
             name = obs.html %>% html_node("span.species-common-name") %>% html_text(),
-            rarity =  obs.html %>% html_node("span.hidden-xs") %>% html_text(),
+            rarity =  obs.html %>% html_node("span.hidden-sm") %>% html_text(),
             validity =   obs.html %>% html_node("td.validation-status-text") %>% html_text(),
             url = obs.url
           )
